@@ -1,3 +1,6 @@
+# NAME: S.KAVIYA
+# REGSITER NO: 212223040090
+# DEPARTMENT: CSE
 # Linux-IPC-Semaphores
 Ex05-Linux IPC-Semaphores
 
@@ -22,16 +25,213 @@ Execute the C Program for the desired output.
 
 ## Write a C program that implements a producer-consumer system with two processes using Semaphores.
 
+#include <stdio.h>	
+
+#include <stdlib.h>  
+
+#include <unistd.h>	  
+
+#include <time.h>	
+
+#include <sys/types.h> 
+
+#include <sys/ipc.h> 
+
+#include <sys/sem.h>	 
+
+#define NUM_LOOPS	20	 
+
+#if defined(__GNU_LIBRARY__) && !defined(_SEM_SEMUN_UNDEFINED)
+
+union semun
+{
+        int val;    
+        
+        struct semid_ds *buf;   
+        
+        unsigned short int *array;  
+        
+        struct seminfo *__buf;      
+        
+};
+
+int main(int argc, char* argv[])
+
+{
+    int sem_set_id;	 
+    
+    union semun sem_val;  
+    
+    int child_pid;	
+    
+    int i;		     
+    struct sembuf sem_op;  
+    
+    int rc;		
+    
+    struct timespec delay; 
+   
+    sem_set_id = semget(IPC_PRIVATE, 1, 0600);
+    
+    if (sem_set_id == -1) 
+    
+    {
+    
+	perror("main: semget");
+ 
+	exit(1);
+ 
+    }
+    
+    printf("semaphore set created, semaphore set id '%d'.\n", sem_set_id);
+    
+    sem_val.val = 0;
+    
+    rc = semctl(sem_set_id, 0, SETVAL, sem_val);
+    
+    child_pid = fork();
+    
+    switch (child_pid) 
+    
+    {
+    
+ case -1:
+ 
+	    perror("fork");
+     
+	    exit(1);
+     
+case 0:		
+
+	    for (i=0; i<NUM_LOOPS; i++) 
+     {
+		
+		sem_op.sem_num = 0;
+  
+		sem_op.sem_op = -1;
+  
+		sem_op.sem_flg = 0;
+  
+		semop(sem_set_id, &sem_op, 1);
+  
+		printf("consumer: '%d'\n", i);
+  
+		fflush(stdout);
+  
+	    }
+     
+	    break;
+     
+	default:	
+ 
+	    for (i=0; i<NUM_LOOPS; i++)
+     {
+     
+		printf("producer: '%d'\n", i);
+  
+		fflush(stdout);
+  
+		sem_op.sem_num = 0;
+  
+sem_op.sem_op = 1;
+
+		sem_op.sem_flg = 0;
+  
+		semop(sem_set_id, &sem_op, 1);
+  
+		if (rand() > 3*(RAND_MAX/4)) 
+  {
+	    	    delay.tv_sec = 0;
+          
+	    	    delay.tv_nsec = 10;
+          
+	    	    //nanosleep(&delay, NULL);
+          
+		                      sleep(10);
+                        
+                        }
+if(NUM_LOOPS>=10)   
+
+{
+	    semctl(sem_set_id, 0, IPC_RMID, sem_val) ;} // Remove the sem_set_id
+     
+	    }
+     
+     }
+     
+	    break;
+     
+    }
+    
+    return 0;
+    
+    }
+
+
+
+
 
 
 
 ## OUTPUT
+
 $ ./sem.o 
+
+semaphore set created, semaphore set id '98304'.
+
+producer: '0'
+
+consumer: '0'
+
+producer: '1'
+
+producer: '2'
+
+consumer: '1'
+
+consumer: '2'
+
+producer: '3'
+
+consumer: '3'
+
+producer: '4'
+
+consumer: '4'
+
+producer: '5'
+
+producer: '6'
+
 
 
 $ ipcs
 
+------ Message Queues --------
 
+key        msqid      owner      perms      used-bytes   messages    
+
+------ Shared Memory Segments --------
+
+key        shmid      owner      perms      bytes      nattch     status   
+
+0x00000000 327680     gganesh    600        524288     2          dest   
+
+0x00000000 163841     gganesh    600        16777216   2          dest   
+
+0x00000000 622594     gganesh    600        524288     2          dest   
+
+0x00000000 458755     gganesh    600        524288     2          dest 
+
+0x00000000 491524     gganesh    600        524288     2          dest 
+
+0x00000000 524293     gganesh    600        524288     2          dest         
+
+------ Semaphore Arrays --------
+
+key        semid      owner      perms      nsems 
+
+0x00000000 98304      gganesh    600        1
 
 
 
