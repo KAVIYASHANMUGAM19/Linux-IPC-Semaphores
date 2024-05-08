@@ -1,6 +1,5 @@
 # NAME: S.KAVIYA
 # REGSITER NO: 212223040090
-# DEPARTMENT: CSE
 # Linux-IPC-Semaphores
 Ex05-Linux IPC-Semaphores
 
